@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="dashboard" id="dashboard">
+    <nav>
+      <button type="button" name="home" id="home">Dashboard</button>
+      <button type="button" name="tasks" id="tasks">Tasks</button>
+      <button type="button" name="logout" id="logout">Log Out</button>
+    </nav>
+
+ <main>
+   <h1>Welcome to TaskManager, <%= user.username %>!</h1>
+   <h3>Your Email: <%= user.email %></h3>
+ </main>
+ <script type="text/javascript">
+   const taskBtn = document.querySelector('#tasks');
+
+   taskBtn.addEventListener('click', (e) => {
+
+     window.location.href = '/tasks'
+   });
+ </script>
+
+
+</div>
+</body>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tasks</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="dashboard">
+    <nav>
+      <button type="button" name="home" id="home">Dashboard</button>
+      <button type="button" name="tasks" id="tasks">Tasks</button>
+      <button type="button" name="logout" id="logout">Log Out</button>
+    </nav>
+
+<main>
+  <h2>Add Task</h2>
+  <form id="addTaskForm">
+    <label for="taskTitle">Task Title:</label>
+    <input type="text" id="taskTitle" name="taskTitle" required>
+
+    <label for="taskDescription">Task Description:</label>
+    <textarea id="taskDescription" name="taskDescription"></textarea>
+
+    <label for="dueDate">Due Date:</label>
+    <input type="date" id="dueDate" name="dueDate">
+
+    <label for="priority">Priority:</label>
+    <select id="priority" name="priority">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>  
+
+        <option value="high">High</option>
+    </select>
+
+
+    <button type="submit">Add Task</button>
+  </form>
+</main>
+</div>
+
+
+  <script type="text/javascript">
+    const taskBtn = document.querySelector('#tasks');
+
+    taskBtn.addEventListener('click', (e) => {
+
+      fetch('/tasks', {method: 'GET'})
+      .then(function(response) {
+        if(response.ok) {
+          console.log('You accessed the tasks page');
+          // window.location.href = '/register';
+          return;
+        }
+        throw new Error('Request failed.');
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+    });
+
+    const taskForm = document.getElementById("addTaskForm");
+    taskForm.addEventListener('submit', async (event) => {
+    homeBtn.addEventListener('click', )
+      event.preventDefault();
+      const taskTitle = document.getElementById('taskTitle').value;
+      const taskDescription = document.getElementById('taskDescription').value;  
+      
+
+      // Send a POST request to the backend to create a new task
+      try {
+        const response = await fetch('/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title: taskTitle, description: taskDescription  
+      
+     })
+        });
+
+        if (response.ok) {
+          // Add the new task to the UI without a full page reload
+          const task = await response.json();
+          const li = document.createElement('li');
+          li.textContent = task.title;
+          li.dataset.id = task._id; // Add a data-id attribute for deletion
+          li.innerHTML += `<button class="delete-task" data-id="${task._id}">Delete</button>`;
+          taskList.appendChild(li);
+          taskInput.value = '';
+        } else {
+          // Handle error
+          console.error('Error creating task:', response.statusText);
+          // Display error message to the user
+        }
+      } catch (error) {
+        console.error('Error creating task:', error);
+        // Display error message to the user
+      }
+    });
+  </script>
+</body>
+</html>
