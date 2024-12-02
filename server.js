@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.set('view engine', 'ejs');
-app.set('views', '/public/views');
+app.set('views', 'public/views');
 
 
 // const verifyToken = (req, res, next) => {
