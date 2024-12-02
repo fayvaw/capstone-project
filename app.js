@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const router = express.Router();
 
 // const User = require('../models/User');
 
@@ -18,6 +17,26 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
+// Middleware
+app.use(express.json());
+
+
+// const verifyToken = (req, res, next) => {
+//   const token = req.headers['authorization'];
+//   if (!token) {
+//     return res.status(401).json({ message: 'Unauthorized' });
+//   }
+
+//   try {
+//     const decoded = jwt.verify(token, 'your_secret_key');
+//     req.user = decoded;
+//     next();  
+//   } catch (error) {
+//     return res.status(401).json({ message: 'Invalid token' });
+//   }
+// };
+// // Protect routes with authentication middleware
+// app.use(verifyToken); // Ensure user is authenticated
 
 // ... (Rest of the code)
 //Database connection
@@ -109,13 +128,7 @@ app.get('/tasks', async (req, res) => {
     res.render('tasks');
 });
 
-// app.get('/dashboard', async (req, res) => {
-//   res.render('dashboard')
-// });
-// ... other endpoints
 
-// Middleware
-app.use(express.json());
 
 // Register Route
 app.post('/register', async (req, res) => {
@@ -149,40 +162,34 @@ app.post('/login', async (req, res) => {
         // Generate JWT token
         const token = jwt.sign({ userId: user._id }, 'your_secret_key');
         // res.json({ token });
-        res.render('dashboard', {user})
+        // res.redirect('/dashboard', {user})
+        res.redirect(`/dashboard?n=${username}`)
 
     } catch (err) {
         res.status(500).json({ error: 'Server Error' });
     }
 });
 
-const verifyToken = (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+app.get('/dashboard', async (req, res) => {
 
-  try {
-    const decoded = jwt.verify(token, 'your_secret_key');
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
-};
-
-// Apply the middleware to protected routes
-router.get('/dashboard', verifyToken, (req, res) => {
-  // Access user information from req.user
-  // res.json({ message: 'Protected route accessed' });
-  res.render('/dashboard', {user})
+  const username = req.query.n
+  const user = await User.findOne({ username });
+  // ...
+  res.render('dashboard', {user})
 });
 
-// Protect routes with authentication middleware
-router.use(verifyToken); // Ensure user is authenticated
+//
+// // Apply the middleware to protected routes
+// app.get('/dashboard', verifyToken, (req, res) => {
+//   // Access user information from req.user
+//   // res.json({ message: 'Protected route accessed' });
+//   res.render('/dashboard', {user})
+// });
+
+
 
 // Get all tasks for the authenticated user
-router.get('/', async (req, res) => {
+app.get('/', async (req, res) => {
   const user = req.user;
   try {
     const tasks = await Task.find({ user: user._id });
@@ -193,7 +200,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create a new task
-router.post('/', async (req, res) => {
+app.post('/', async (req, res) => {
   const { title, description, dueDate, priority } = req.body;
   const user = req.user;
 
@@ -201,49 +208,49 @@ router.post('/', async (req, res) => {
     const task = new Task({ title, description, dueDate, priority, user: user._id });
     await task.save();
     res.status(201).json(task);
-  } catch (err) {
+  } catch (err) {   
     res.status(400).json({ error: err.message });
   }
 });
 
 // Update a task
-router.put('/:taskId', async (req, res) => {
-  const { taskId } = req.params;
-  const { title, description, dueDate, priority } = req.body;
-  const user = req.user;
+// router.put('/:taskId', async (req, res) => {
+//   const { taskId } = req.params;
+//   const { title, description, dueDate, priority } = req.body;
+//   const user = req.user;
 
-  try {
-    const task = await Task.findOneAndUpdate(
-      { _id: taskId, user: user._id },
-      { title, description, dueDate, priority },
-      { new: true }
-    );
-    if (!task) {
-      return res.status(404).json({ error: 'Task not found' });
-    }
-    res.json(task);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//   try {
+//     const task = await Task.findOneAndUpdate(
+//       { _id: taskId, user: user._id },
+//       { title, description, dueDate, priority },
+//       { new: true }
+//     );
+//     if (!task) {
+//       return res.status(404).json({ error: 'Task not found' });
+//     }
+//     res.json(task);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
-// Delete a task
-router.delete('/:taskId', async (req, res) => {
-  const { taskId } = req.params;
-  const user = req.user;
+// // Delete a task
+// router.delete('/:taskId', async (req, res) => {
+//   const { taskId } = req.params;
+//   const user = req.user;
 
-  try {
-    const task = await Task.findOneAndDelete({ _id: taskId, user: user._id });
-    if (!task) {
-      return res.status(404).json({ error: 'Task not found' });
-    }
-    res.json({ message: 'Task deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//   try {
+//     const task = await Task.findOneAndDelete({ _id: taskId, user: user._id });
+//     if (!task) {
+//       return res.status(404).json({ error: 'Task not found' });
+//     }
+//     res.json({ message: 'Task deleted successfully' });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
-module.exports = router;
+// module.exports = router;
 
 
 app.listen(port, () => {
